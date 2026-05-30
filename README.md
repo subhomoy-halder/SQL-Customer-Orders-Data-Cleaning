@@ -1,9 +1,9 @@
 # E-Commerce Customer Orders: SQL Data Cleaning Pipeline
 
 ## 🎯 Project Objective
-In the real world, raw data is rarely ready for immediate analysis. This project demonstrates a comprehensive data cleaning pipeline built to transform messy, inconsistent e-commerce sales data into a structured, production-ready format. 
+In the real world, raw data is rarely ready for immediate analysis. This project demonstrates a comprehensive data cleaning pipeline built to transform messy, inconsistent ecommerce sales data into a structured, production ready format. 
 
-The goal of this project was to identify and resolve common data quality issues—such as formatting inconsistencies, missing values, and duplicate records—ensuring the final dataset is reliable for business intelligence and reporting.
+The goal of this project is to identify and resolve common data quality issues such as formatting inconsistencies, missing values, and duplicate records ensuring the final dataset is reliable for business intelligence and reporting.
 
 ## 🛠️ Tools & Techniques Used
 * **Database Management System:** Microsoft SQL Server (T-SQL)
@@ -13,10 +13,8 @@ The goal of this project was to identify and resolve common data quality issues�
 
 ## 💻 Code Highlights
 
-Recruiters and hiring managers, here are a few snippets highlighting the logic used to clean this dataset:
-
 ### 1. Removing Duplicates using a CTE and Window Functions
-To ensure revenue wasn't double-counted, I partitioned the data by all relevant columns to isolate and delete exact duplicates while keeping the original record.
+To ensure revenue wasn't double counted, I partitioned the data by all relevant columns to isolate and delete exact duplicates while keeping the original record.
 
 ```sql
 WITH duplicates AS (
@@ -47,7 +45,7 @@ SET country = CASE
                 WHEN LOWER(country) = 'canada' THEN 'Canada'
                 WHEN LOWER(country) = 'spain' THEN 'Spain'
                 WHEN LOWER(country) = 'india' THEN 'India'
-                ELSE 'Other/Unknown'
+                ELSE 'Others'
               END;
 ```
 
@@ -61,7 +59,7 @@ Here is a snapshot of how the raw data was transformed into analysis-ready data:
 | :--- | :--- | :--- |
 | **Inconsistent Case & Formatting** | `1008, Carlos Hern+índez, Iphone 14, spain, "DELIVERED,-"` | `1008, Carlos Hernandez, iPhone 14, Spain, Delivered` |
 | **Data Type Typos** | `1003, SARAH THOMPSON, Samsung Galaxy S22, two, 799` | `1003, Sarah Thompson, Samsung Galaxy S22, 2, 799.00` |
-| **Missing Values** | `1004, Tom O'Brien, NULL, Google Pixel` | `1004, Tom O'Brien, Missing Email, Google Pixel` |
+| **Missing Values** | `1004, Tom O'Brien, NULL, Google Pixel` | `1004, Tom O'Brien, tom.obrien@gmail.com, Google Pixel` |
 | **Date Formatting** | `1002, john smith, 11/02/2023, apple watch` | `1002, John Smith, 2023-11-02, Apple Watch` |
 
 ---
@@ -73,14 +71,14 @@ During the data exploration phase, 14 specific data discrepancies were identifie
 2. **Standardizing Order Dates:** Used the `CAST` function to standardize the column into a proper SQL `DATE` format (`YYYY-MM-DD`).
 3. **Standardizing Product Names:** Applied a `CASE WHEN` statement combined with `LOWER()` to categorize products into their official brand formatting.
 4. **Fixing Alphabetical Quantities:** Updated text strings (e.g., `two`) in numerical columns to their corresponding integers.
-5. **Cleaning Financial Formatting:** Used `RIGHT` and `LEN` functions to strip leading non-numeric characters (like `$`) to prepare the column for math operations.
+5. **Cleaning Financial Formatting:** Used `RIGHT` and `LEN` functions to strip leading non numeric characters (like `$`) to prepare the column for math operations.
 6. **Standardizing Country Names:** Used a `CASE WHEN` statement to map regional variations (`uk`, `USA`) to standardized names.
 7. **Standardizing Order Statuses:** Normalized statuses to Title Case using a `CASE WHEN` statement.
 8. **Handling Missing Names:** Replaced literal `'NULL'` strings and actual `NULL` values in the `customer_name` column with `'Unknown'`.
 9. **Handling Missing Emails:** Utilized existing data matching to impute missing email addresses where applicable.
 10. **Imputing Missing Prices:** Built a lookup `CASE` statement based on `product_name` to backfill missing prices with correct retail values.
 11. **Removing Invalid Characters:** Used pattern matching (`LIKE '%[^A-Za-z ]%'`) to identify and correct names with corrupted symbols.
-12. **Removing Duplicate Records:** Created a CTE utilizing the `ROW_NUMBER()` Window Function to safely delete exact row-level duplicates.
+12. **Removing Duplicate Records:** Created a CTE utilizing the `ROW_NUMBER()` Window Function to safely delete exact row level duplicates.
 13. **Casting Data Types:** Used `ALTER TABLE` and `ALTER COLUMN` to convert strings into optimal structural data types (`INT`, `DATE`, `DECIMAL`).
 14. **Dropping Unnecessary Columns:** Dropped the `notes` column to reduce table bloat.
 
