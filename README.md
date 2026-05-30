@@ -1,78 +1,93 @@
-# E-Commerce Customer Orders: Complete SQL Data Cleaning Project
+# E-Commerce Customer Orders: SQL Data Cleaning Pipeline
 
-## 🎯 Project Overview
-This project focuses on taking a raw, messy dataset of e-commerce customer orders and transforming it into a clean, structured, and reliable format ready for exploratory data analysis (EDA) and reporting. The project is entirely SQL-based, utilizing a series of scripts to load, explore, and meticulously clean the data step-by-step.
+## 🎯 Project Objective
+In the real world, raw data is rarely ready for immediate analysis. This project demonstrates a comprehensive data cleaning pipeline built to transform messy, inconsistent e-commerce sales data into a structured, production-ready format. 
 
-## 📁 Repository Files
-This repository contains the following files:
-* **`data/Raw Data.csv`**: The initial, uncleaned dataset containing inconsistencies, duplicates, and missing values.
-* **`data/Cleaned Data.csv`**: The final output after all SQL transformations have been applied.
-* **`SQL Scripts/CREATE TABLE Scripts.sql`**: DDL and DML scripts to create the database tables and bulk insert the raw CSV data.
-* **`SQL Scripts/Data Cleaning Scripts.sql`**: The core transformation pipeline containing the UPDATE, DELETE, and ALTER statements used to resolve all 14 issues.
+The goal of this project was to identify and resolve common data quality issues—such as formatting inconsistencies, missing values, and duplicate records—ensuring the final dataset is reliable for business intelligence and reporting.
+
+## 🛠️ Tools & Techniques Used
+* **Database Management System:** Microsoft SQL Server (T-SQL)
+* **Techniques:** Common Table Expressions (CTEs), Window Functions, String Manipulation, Data Type Conversion, DML/DDL Commands.
+
+---
+
+## 💻 Code Highlights
+
+Recruiters and hiring managers, here are a few snippets highlighting the logic used to clean this dataset:
+
+### 1. Removing Duplicates using a CTE and Window Functions
+To ensure revenue wasn't double-counted, I partitioned the data by all relevant columns to isolate and delete exact duplicates while keeping the original record.
+
+```sql
+WITH duplicates AS (
+    SELECT
+        order_id,
+        ROW_NUMBER() OVER(
+            PARTITION BY customer_name, email, order_date, product_name, quantity, price, country, order_status 
+            ORDER BY order_date
+        ) AS rn
+    FROM data_cleaning_2_cleaned
+)
+DELETE FROM data_cleaning_2_cleaned
+WHERE order_id IN (
+    SELECT order_id 
+    FROM duplicates
+    WHERE rn > 1
+);
+```
+
+### 2. Standardizing Categorical Data
+To prevent aggregation errors in visualization tools (like Tableau or PowerBI), I used string manipulation and `CASE WHEN` statements to funnel inconsistent entries into clean categories.
+
+```sql
+UPDATE data_cleaning_2_cleaned
+SET country = CASE
+                WHEN LOWER(country) IN ('uk', 'united kingdom') THEN 'United Kingdom'
+                WHEN LOWER(country) IN ('us', 'usa', 'united states', 'united states of america') THEN 'United States of America'
+                WHEN LOWER(country) = 'canada' THEN 'Canada'
+                WHEN LOWER(country) = 'spain' THEN 'Spain'
+                WHEN LOWER(country) = 'india' THEN 'India'
+                ELSE 'Other/Unknown'
+              END;
+```
+
+---
+
+## 📊 The Result: Before & After
+
+Here is a snapshot of how the raw data was transformed into analysis-ready data:
+
+| Aspect | Raw Data (Before) | Cleaned Data (After) |
+| :--- | :--- | :--- |
+| **Inconsistent Case & Formatting** | `1008, Carlos Hern+índez, Iphone 14, spain, "DELIVERED,-"` | `1008, Carlos Hernandez, iPhone 14, Spain, Delivered` |
+| **Data Type Typos** | `1003, SARAH THOMPSON, Samsung Galaxy S22, two, 799` | `1003, Sarah Thompson, Samsung Galaxy S22, 2, 799.00` |
+| **Missing Values** | `1004, Tom O'Brien, NULL, Google Pixel` | `1004, Tom O'Brien, Missing Email, Google Pixel` |
+| **Date Formatting** | `1002, john smith, 11/02/2023, apple watch` | `1002, John Smith, 2023-11-02, Apple Watch` |
 
 ---
 
 ## 🧹 The 14-Step Data Cleaning Process
 During the data exploration phase, 14 specific data discrepancies were identified. The `Data Cleaning Scripts.sql` file addresses each of them in the following order:
 
-### 1. Standardizing Customer Names
-**Issue:** Names had inconsistent casing and arbitrary spacing (e.g., `SARAH THOMPSON`, `john smith`).
-**Solution:** Utilized complex string manipulation (`CHARINDEX`, `UPPER`, `LOWER`, `SUBSTRING`, `TRIM`) to dynamically format all names to proper Title Case.
+1. **Standardizing Customer Names:** Utilized string manipulation (`CHARINDEX`, `UPPER`, `LOWER`, `SUBSTRING`, `TRIM`) to dynamically format all names to proper Title Case.
+2. **Standardizing Order Dates:** Used the `CAST` function to standardize the column into a proper SQL `DATE` format (`YYYY-MM-DD`).
+3. **Standardizing Product Names:** Applied a `CASE WHEN` statement combined with `LOWER()` to categorize products into their official brand formatting.
+4. **Fixing Alphabetical Quantities:** Updated text strings (e.g., `two`) in numerical columns to their corresponding integers.
+5. **Cleaning Financial Formatting:** Used `RIGHT` and `LEN` functions to strip leading non-numeric characters (like `$`) to prepare the column for math operations.
+6. **Standardizing Country Names:** Used a `CASE WHEN` statement to map regional variations (`uk`, `USA`) to standardized names.
+7. **Standardizing Order Statuses:** Normalized statuses to Title Case using a `CASE WHEN` statement.
+8. **Handling Missing Names:** Replaced literal `'NULL'` strings and actual `NULL` values in the `customer_name` column with `'Unknown'`.
+9. **Handling Missing Emails:** Utilized existing data matching to impute missing email addresses where applicable.
+10. **Imputing Missing Prices:** Built a lookup `CASE` statement based on `product_name` to backfill missing prices with correct retail values.
+11. **Removing Invalid Characters:** Used pattern matching (`LIKE '%[^A-Za-z ]%'`) to identify and correct names with corrupted symbols.
+12. **Removing Duplicate Records:** Created a CTE utilizing the `ROW_NUMBER()` Window Function to safely delete exact row-level duplicates.
+13. **Casting Data Types:** Used `ALTER TABLE` and `ALTER COLUMN` to convert strings into optimal structural data types (`INT`, `DATE`, `DECIMAL`).
+14. **Dropping Unnecessary Columns:** Dropped the `notes` column to reduce table bloat.
 
-### 2. Standardizing Order Dates
-**Issue:** Dates were stored as strings in various formats (e.g., `2023/10/30`, `11/02/2023`).
-**Solution:** Used the `CAST` function to standardize the column into a proper SQL `DATE` format (`YYYY-MM-DD`).
-
-### 3. Standardizing Product Names
-**Issue:** Inconsistent casing and spelling of core products (e.g., `apple watch`, `Iphone 14`).
-**Solution:** Applied a `CASE WHEN` statement combined with `LOWER()` to categorize all products into their official brand formatting, placing unrecognized items into an 'Others' bucket.
-
-### 4. Fixing Alphabetical Quantities
-**Issue:** Numerical quantity columns contained text strings (e.g., `two`).
-**Solution:** Updated the specific text values to their corresponding numerical integers.
-
-### 5. Cleaning Financial Formatting
-**Issue:** The price column contained non-numeric characters like dollar signs (e.g., `$399.99`).
-**Solution:** Used the `RIGHT` and `LEN` functions to strip leading non-numeric characters to prepare the column for mathematical operations.
-
-### 6. Standardizing Country Names
-**Issue:** Countries were entered with multiple variations and abbreviations (e.g., `uk`, `USA`, `spain`).
-**Solution:** Used a `CASE WHEN` statement with `IN` operators to map all regional variations to standardized names (`United Kingdom`, `United States of America`, `Spain`, etc.).
-
-### 7. Standardizing Order Statuses
-**Issue:** Casing inconsistencies in shipping statuses (e.g., `DELIVERED`, `shipped`).
-**Solution:** Normalized all statuses to Title Case using a `CASE WHEN` statement.
-
-### 8 & 9. Handling Missing Customer Information (NULLs)
-**Issue:** `customer_name` and `email` columns contained missing values or literal `'NULL'` strings.
-**Solution:** Replaced `NULL` names with `'Unknown'` and utilized existing data matching to impute missing email addresses where applicable.
-
-### 10. Imputing Missing Prices
-**Issue:** The `price` column contained `NULL` values.
-**Solution:** Built a lookup `CASE` statement based on the `product_name` to backfill missing prices with the correct retail value (e.g., setting 'iPhone 14' to 1099).
-
-### 11. Removing Invalid Characters from Names
-**Issue:** Customer names contained non-alphabetical characters/symbols (e.g., `Carlos Hern+índez`).
-**Solution:** Used pattern matching (`LIKE '%[^A-Za-z ]%'`) to identify bad strings and `UPDATE` statements to correct the corrupted names.
-
-### 12. Removing Duplicate Records
-**Issue:** The raw dataset contained exact row-level duplicates.
-**Solution:** Created a Common Table Expression (CTE) utilizing the `ROW_NUMBER()` Window Function, partitioned by all relevant columns, to isolate and `DELETE` duplicate entries while retaining the original records.
-
-### 13. Casting Data Types
-**Issue:** Because the data was imported from a raw CSV, all columns defaulted to `VARCHAR`.
-**Solution:** Used `ALTER TABLE` and `ALTER COLUMN` commands to convert the standardized strings into optimal structural data types (`INT`, `DATE`, and specific `VARCHAR` lengths) to optimize database storage and performance.
-
-### 14. Dropping Unnecessary Columns
-**Issue:** The `notes` column contained unstructured, irrelevant text.
-**Solution:** Dropped the column entirely to reduce table bloat and finalize the clean dataset.
-
----
-
-## 🛠️ Skills & Technologies Demonstrated
-* **RDBMS:** Microsoft SQL Server (T-SQL)
-* **Data Import:** `BULK INSERT` for flat files.
-* **Advanced SQL:** CTEs, Window Functions (`ROW_NUMBER`).
-* **Data Manipulation (DML):** `UPDATE`, `DELETE`, `CAST`, `CASE WHEN`.
-* **String Functions:** `TRIM`, `UPPER`, `LOWER`, `SUBSTRING`, `CHARINDEX`, `RIGHT`, `LEN`.
-* **Data Definition (DDL):** `CREATE TABLE`, `ALTER TABLE`, `DROP COLUMN`.
+## 📁 Repository Structure
+* `data/`
+  * `Raw Data.csv`: The initial, uncleaned dataset.
+  * `Cleaned Data.csv`: The final output after all transformations.
+* `sql_scripts/`
+  * `CREATE TABLE Scripts.sql`: DDL and DML scripts for table creation and bulk inserts.
+  * `Data Cleaning Scripts.sql`: The core transformation pipeline.
