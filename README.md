@@ -1,17 +1,17 @@
-# E-Commerce Customer Orders: SQL Data Cleaning Pipeline
+# Ecommerce Customer Orders: SQL Data Cleaning Pipeline
 
-## 🎯 Project Objective
-In the real world, raw data is rarely ready for immediate analysis. This project demonstrates a comprehensive data cleaning pipeline built to transform messy, inconsistent ecommerce sales data into a structured, production ready format. 
+## Project Objective
+In industry, raw data is rarely ready for immediate analysis. This project demonstrates a comprehensive data cleaning pipeline built to transform messy, inconsistent and raw ecommerce sales data into a structured production ready format. 
 
-The goal of this project is to identify and resolve common data quality issues such as formatting inconsistencies, missing values, and duplicate records ensuring the final dataset is reliable for business intelligence and reporting.
+The goal of this project is to identify and resolve common data quality issues such as formatting inconsistencies, missing values and duplicate records ensuring the final dataset is reliable for business intelligence and reporting.
 
-## 🛠️ Tools & Techniques Used
+## Tools & Techniques Used
 * **Database Management System:** Microsoft SQL Server (T-SQL)
 * **Techniques:** Common Table Expressions (CTEs), Window Functions, String Manipulation, Data Type Conversion, DML/DDL Commands.
 
 ---
 
-## 💻 Code Highlights
+## Code Highlights
 
 ### 1. Removing Duplicates using a CTE and Window Functions
 To ensure revenue wasn't double counted, I partitioned the data by all relevant columns to isolate and delete exact duplicates while keeping the original record.
@@ -35,7 +35,7 @@ WHERE order_id IN (
 ```
 
 ### 2. Standardizing Categorical Data
-To prevent aggregation errors in visualization tools (like Tableau or PowerBI), I used string manipulation and `CASE WHEN` statements to funnel inconsistent entries into clean categories.
+To prevent aggregation errors in BI tools, I used string manipulation and `CASE WHEN` statements to funnel inconsistent entries into clean categories.
 
 ```sql
 UPDATE data_cleaning_2_cleaned
@@ -51,9 +51,9 @@ SET country = CASE
 
 ---
 
-## 📊 The Result: Before & After
+## The Result: Before & After
 
-Here is a snapshot of how the raw data was transformed into analysis-ready data:
+Here is a snapshot of how the raw data was transformed into analysis ready data:
 
 | Aspect | Raw Data (Before) | Cleaned Data (After) |
 | :--- | :--- | :--- |
@@ -64,7 +64,7 @@ Here is a snapshot of how the raw data was transformed into analysis-ready data:
 
 ---
 
-## 🧹 The 14-Step Data Cleaning Process
+## The 14 Step Data Cleaning Process
 During the data exploration phase, 14 specific data discrepancies were identified. The `Data Cleaning Scripts.sql` file addresses each of them in the following order:
 
 1. **Standardizing Customer Names:** Utilized string manipulation (`CHARINDEX`, `UPPER`, `LOWER`, `SUBSTRING`, `TRIM`) to dynamically format all names to proper Title Case.
@@ -82,3 +82,4 @@ During the data exploration phase, 14 specific data discrepancies were identifie
 13. **Casting Data Types:** Used `ALTER TABLE` and `ALTER COLUMN` to convert strings into optimal structural data types (`INT`, `DATE`, `DECIMAL`).
 14. **Dropping Unnecessary Columns:** Dropped the `notes` column to reduce table bloat.
 
+---
