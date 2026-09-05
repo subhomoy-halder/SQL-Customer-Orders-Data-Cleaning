@@ -82,10 +82,3 @@ During the data exploration phase, 14 specific data discrepancies were identifie
 13. **Casting Data Types:** Used `ALTER TABLE` and `ALTER COLUMN` to convert strings into optimal structural data types (`INT`, `DATE`, `DECIMAL`).
 14. **Dropping Unnecessary Columns:** Dropped the `notes` column to reduce table bloat.
 
-## 📁 Repository Structure
-* `data/`
-  * `Raw Data.csv`: The initial, uncleaned dataset.
-  * `Cleaned Data.csv`: The final output after all transformations.
-* `sql_scripts/`
-  * `CREATE TABLE Scripts.sql`: DDL and DML scripts for table creation and bulk inserts.
-  * `Data Cleaning Scripts.sql`: The core transformation pipeline.
